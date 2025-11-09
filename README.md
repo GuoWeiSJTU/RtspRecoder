@@ -32,6 +32,10 @@ RtspRecorder是一个轻量级的流媒体录制工具，专注于从RTSP源捕�
 ├── conanfile.txt                  # Conan 依赖配置文件
 ├── config/                        # 配置文件目录
 ├── cmake/                         # CMake 配置文件目录
+├── docs/                          # 项目文档目录
+│   ├── 开发周计划.md               # 开发计划文档
+│   ├── 设计需求.md                 # 项目需求分析文档
+│   └── 软件设计.md                 # 软件设计文档
 ├── include/                       # 头文件目录
 ├── plugins/                       # 插件源码目录
 ├── src/                           # 主程序源码目录
