@@ -1,0 +1,32 @@
+# Build directories
+build/
+*.so
+*.o
+*.a
+
+# Conan directories and files
+conan.lock
+conanbuild.sh
+conanrun.sh
+deactivate_conanbuild.sh
+deactivate_conanrun.sh
+conanbuildenv-*
+conanrunenv-*
+
+# IDE files
+.vscode/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# CMake files
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+compile_commands.json
+
+# Environment files
+.env
