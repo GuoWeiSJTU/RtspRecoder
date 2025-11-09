@@ -12,6 +12,18 @@ deactivate_conanbuild.sh
 deactivate_conanrun.sh
 conanbuildenv-*
 conanrunenv-*
+conanbuildenv-release-x86_64.sh
+conanrunenv-release-x86_64.sh
+deactivate_conanbuildenv-release-x86_64.sh
+conandata.txt
+conan_toolchain.cmake
+
+# CMake files
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+compile_commands.json
+cmake/
 
 # IDE files
 .vscode/
@@ -21,12 +33,6 @@ conanrunenv-*
 # OS generated files
 .DS_Store
 Thumbs.db
-
-# CMake files
-cmake-build-*/
-CMakeCache.txt
-CMakeFiles/
-compile_commands.json
 
 # Environment files
 .env
