@@ -68,14 +68,20 @@ sudo conan install .. --build=missing -c tools.system.package_manager:mode=insta
 在项目根目录执行以下命令：
 
 ```bash
+./scripts/build.sh
+```
+
+或者手动构建：
+
+```bash
 mkdir build && cd build
 conan install .. --build=missing
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j$(nproc)
+cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
+cmake --build .
 ```
 
 构建完成后，将在 `build/` 目录下生成以下文件：
-- `RtspRecorder`: 主程序可执行文件
+- `stream_recorder`: 主程序可执行文件
 - `librtsp_source.so`: RTSP协议插件（Linux）
 
 ## 运行程序

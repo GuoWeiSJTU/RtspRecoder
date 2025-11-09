@@ -20,8 +20,8 @@ endif()
 
 message(STATUS "C++ 编译器标志: ${CMAKE_CXX_FLAGS}")
 
-# Include Conan generated files
-include(${CMAKE_CURRENT_SOURCE_DIR}/conan_toolchain.cmake OPTIONAL RESULT_VARIABLE conan_toolchain_loaded)
+# Include Conan generated files (更好的方式是从构建目录包含)
+include(${CMAKE_BINARY_DIR}/conan_toolchain.cmake OPTIONAL RESULT_VARIABLE conan_toolchain_loaded)
 if(conan_toolchain_loaded)
     message(STATUS "Conan toolchain loaded successfully")
 else()

@@ -64,13 +64,10 @@ fi
 echo "创建 cmake 目录..."
 mkdir -p cmake
 
-# 移动用户自定义的.cmake文件到cmake目录（排除可能由conan生成的工具链文件）
-echo "整理 CMake 配置文件..."
-for file in *.cmake; do
-    if [[ "$file" != "conan_*.cmake" && -f "$file" ]]; then
-        mv "$file" cmake/ 2>/dev/null || true
-    fi
-done
+# 整理已有的CMake配置文件
+echo "整理已有的 CMake 配置文件..."
+# 使用find命令查找所有.cmake文件并移动到cmake目录（除了conan_toolchain.cmake）
+find . -maxdepth 1 -name "*.cmake" -not -name "conan_toolchain.cmake" -exec mv {} cmake/ \; 2>/dev/null || true
 
 # 检查是否安装了 conan
 if ! command -v conan &> /dev/null
@@ -98,20 +95,29 @@ conan install . --build=missing \
     -c tools.system.package_manager:sudo=True \
     -s build_type=$BUILD_TYPE
 
+# 再次整理新生成的CMake配置文件
+echo "整理新生成的 CMake 配置文件..."
+find . -maxdepth 1 -name "*.cmake" -not -name "conan_toolchain.cmake" -exec mv {} cmake/ \; 2>/dev/null || true
+
 # 进入构建目录
 cd build
 
 # 配置项目
 echo "配置项目..."
-cmake .. -DCMAKE_TOOLCHAIN_FILE=../conan_toolchain.cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
 # 编译项目
 echo "构建项目..."
 cmake --build . --parallel $PARALLEL_JOBS
 
+# 构建完成后再次整理（以防万一）
+echo "最后整理 CMake 配置文件..."
+cd ..
+find . -maxdepth 1 -name "*.cmake" -not -name "conan_toolchain.cmake" -exec mv {} cmake/ \; 2>/dev/null || true
+
 echo "========================================"
 echo "编译完成!"
 echo "构建类型: $BUILD_TYPE"
-echo "可执行文件位置: build/RtspRecorder"
+echo "可执行文件位置: build/stream_recorder"
 echo "插件位置: build/librtsp_source.so"
 echo "========================================"
