@@ -1,0 +1,26 @@
+# 全局配置
+log_level: info
+max_concurrent_streams: 10
+default_storage_path: ./recordings
+
+# 流配置
+streams:
+  - id: camera1
+    url: rtsp://192.168.1.100:554/stream1
+    username: admin
+    password: admin123
+    record_config:
+      format: mp4
+      segment_duration: 300  # 5分钟
+      segment_size: 1073741824  # 1GB
+      storage_backend: local
+
+  - id: camera2
+    url: rtsp://192.168.1.101:554/stream1
+    username: admin
+    password: admin123
+    record_config:
+      format: mp4
+      segment_duration: 300
+      segment_size: 1073741824
+      storage_backend: local

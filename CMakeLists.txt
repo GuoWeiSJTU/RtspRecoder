@@ -1,39 +1,96 @@
 cmake_minimum_required(VERSION 3.15)
-project(StreamRecorder)
+project(RtspRecorder VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# 设置 Conan 工具链路径
-set(CONAN_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/cmake/conan_toolchain.cmake")
-if(EXISTS ${CONAN_TOOLCHAIN_FILE})
-    include(${CONAN_TOOLCHAIN_FILE})
+# 设置默认构建类型为 Release
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
 endif()
 
-find_package(asio REQUIRED)
-find_package(fmt REQUIRED)
-find_package(ffmpeg REQUIRED)
+# 根据构建类型设置编译器选项
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -Wall -Wextra")
+    message(STATUS "构建类型: Debug")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG")
+    message(STATUS "构建类型: Release")
+endif()
 
+message(STATUS "C++ 编译器标志: ${CMAKE_CXX_FLAGS}")
+
+# Include Conan generated files
+include(${CMAKE_CURRENT_SOURCE_DIR}/conan_toolchain.cmake OPTIONAL RESULT_VARIABLE conan_toolchain_loaded)
+if(conan_toolchain_loaded)
+    message(STATUS "Conan toolchain loaded successfully")
+else()
+    message(WARNING "Conan toolchain not found")
+endif()
+
+# Find required packages
+find_package(asio REQUIRED)
+find_package(ffmpeg REQUIRED)
+find_package(yaml-cpp REQUIRED)
+find_package(fmt REQUIRED)
+
+# Include directories
 include_directories(include)
 
-# 主程序
-add_executable(stream_recorder src/main.cpp)
-target_link_libraries(stream_recorder asio::asio fmt::fmt ffmpeg::ffmpeg)
+# Source files
+set(SOURCES
+    src/core/main.cpp
+    src/core/config_manager.cpp
+    src/core/recorder_controller.cpp
+    src/storage/local_storage.cpp
+)
 
-# 插件
-add_library(rtsp_source_plugin SHARED plugins/rtsp_source.cpp)
-target_link_libraries(rtsp_source_plugin asio::asio ffmpeg::ffmpeg)
-target_include_directories(rtsp_source_plugin PUBLIC include)
+# Main executable
+add_executable(${PROJECT_NAME} ${SOURCES})
 
-# 设置输出目录
-set_target_properties(stream_recorder PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+# 设置输出名称
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "stream_recorder")
 
-set_target_properties(rtsp_source_plugin PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+# Link libraries using modern CMake targets
+target_link_libraries(${PROJECT_NAME} PRIVATE 
+    asio::asio
+    ffmpeg::ffmpeg
+    yaml-cpp::yaml-cpp
+    fmt::fmt
+)
 
-# 创建必要的目录
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugins)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/config)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+# Plugin targets
+add_library(rtsp_source MODULE plugins/rtsp/rtsp_source.cpp)
+target_link_libraries(rtsp_source PRIVATE 
+    asio::asio
+    ffmpeg::ffmpeg
+)
+
+# 设置插件属性
+set_target_properties(rtsp_source PROPERTIES 
+    PREFIX ""
+    OUTPUT_NAME "rtsp_source"
+)
+
+# Additional plugins can be added here
+# add_library(rtmp_source MODULE plugins/rtmp/rtmp_source.cpp)
+# target_link_libraries(rtmp_source PRIVATE 
+#     asio::asio
+#     ffmpeg::ffmpeg
+# )
+
+# Install targets
+install(TARGETS ${PROJECT_NAME} rtsp_source
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
+
+# Install headers
+install(DIRECTORY include/ DESTINATION include/${PROJECT_NAME})
+
+# Install config
+install(DIRECTORY config/ DESTINATION config)
+
+# Install docs
+install(DIRECTORY docs/ DESTINATION share/doc/${PROJECT_NAME})
